@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KeyRound, ShieldCheck, Smartphone } from 'lucide-react';
-import { useErp } from '@/app/ErpContext';
+import { DEMO_SUPABASE_AUTH_PASSWORD, useErp } from '@/app/ErpContext';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
 export function LoginPage() {
@@ -14,33 +14,54 @@ export function LoginPage() {
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!identifier.trim()) return;
-    if (isSupabaseConfigured && supabase) {
-      const isEmail = identifier.includes('@');
+    const cleaned = identifier.trim().toLowerCase();
+    if (!cleaned) return;
+    if (isSupabaseConfigured && supabase && !cleaned.endsWith('@asty.demo')) {
+      const isEmail = cleaned.includes('@');
       const { error } = isEmail
-        ? await supabase.auth.signInWithOtp({ email: identifier.trim() })
+        ? await supabase.auth.signInWithOtp({ email: cleaned })
         : await supabase.auth.signInWithOtp({ phone: identifier.trim() });
       if (error) {
         setStatusMsg(error.message);
         return;
       }
+      setOtpSent(true);
+      setStatusMsg('Live Supabase OTP sent — enter the 6-digit verification code.');
+      return;
     }
     setOtpSent(true);
-    setStatusMsg('OTP dispatched (Demo OTP: 123456)');
+    setStatusMsg('Demo OTP ready for @asty.demo profile (enter 123456 to sign into live Supabase session).');
   };
 
-  const handleVerifyOtp = (e: React.FormEvent) => {
+  const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
+    const cleaned = identifier.trim().toLowerCase();
+    if (isSupabaseConfigured && supabase && cleaned && !cleaned.endsWith('@asty.demo')) {
+      const isEmail = cleaned.includes('@');
+      const { error } = isEmail
+        ? await supabase.auth.verifyOtp({ email: cleaned, token: otpCode.trim(), type: 'email' })
+        : await supabase.auth.verifyOtp({ phone: identifier.trim(), token: otpCode.trim(), type: 'sms' });
+      if (error) {
+        setStatusMsg(error.message);
+        return;
+      }
+    } else if (isSupabaseConfigured && supabase && cleaned.endsWith('@asty.demo')) {
+      await supabase.auth.signInWithPassword({
+        email: cleaned,
+        password: DEMO_SUPABASE_AUTH_PASSWORD,
+      });
+    }
+
     const matched = state.users.find(
       (u) =>
         u.isActive &&
-        (u.email.toLowerCase() === identifier.trim().toLowerCase() ||
+        (u.email.toLowerCase() === cleaned ||
           u.phone.replace(/\s+/g, '') === identifier.replace(/\s+/g, '')),
     );
     if (matched) {
       loginAsUser(matched.id);
     } else {
-      setStatusMsg('No active user profile matched that email/phone. Use one of the seeded demo accounts below.');
+      setStatusMsg('No active user profile matched that email/phone. Use one of the seeded position accounts below.');
     }
   };
 

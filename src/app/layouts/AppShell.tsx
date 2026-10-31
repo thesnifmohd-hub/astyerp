@@ -31,6 +31,7 @@ export function AppShell() {
     currentUser,
     isOnline,
     offlineQueueCount,
+    cloudSyncStatus,
     loginAsUser,
     logout,
     can,
@@ -152,8 +153,26 @@ export function AppShell() {
               <div className="text-xs font-semibold text-asty-charcoal flex items-center gap-2">
                 <span>{userPositions.map((p) => p?.name).join(' + ')}</span>
                 <span className="hidden sm:inline text-slate-300">|</span>
-                <span className="hidden sm:inline text-[11px] font-normal text-slate-500">
-                  {isSupabaseConfigured ? t('app.live_mode') : t('app.demo_mode')}
+                <span
+                  className={`hidden sm:inline rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                    isSupabaseConfigured
+                      ? cloudSyncStatus === 'synced'
+                        ? 'bg-emerald-50 text-emerald-700'
+                        : cloudSyncStatus === 'error'
+                          ? 'bg-red-50 text-red-700'
+                          : 'bg-sky-50 text-sky-700'
+                      : 'text-slate-500'
+                  }`}
+                >
+                  {isSupabaseConfigured
+                    ? cloudSyncStatus === 'synced'
+                      ? 'Supabase Cloud Synced'
+                      : cloudSyncStatus === 'syncing'
+                        ? 'Syncing to Supabase…'
+                        : cloudSyncStatus === 'connecting'
+                          ? 'Connecting to Supabase…'
+                          : 'Cloud Sync Retry'
+                    : t('app.demo_mode')}
                 </span>
               </div>
             </div>

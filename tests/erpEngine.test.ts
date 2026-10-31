@@ -147,7 +147,7 @@ describe('Asty ERP — Core Business Rules & Security Verification', () => {
       submitSiteCheckin(state, {
         actorUserId: 'usr-sup-1',
         siteId: 'site-hadi',
-        reportDate: '2026-11-01',
+        reportDate: '2027-01-15',
         slot: 'evening',
         lat: 10.5500,
         lng: 76.2200,
@@ -163,7 +163,7 @@ describe('Asty ERP — Core Business Rules & Security Verification', () => {
       slot: 'evening' as const,
       dataUrl: 'data:image/jpeg;base64,stub',
       caption: `Photo ${i}`,
-      capturedAt: '2026-11-01T17:30:00Z',
+      capturedAt: '2027-01-15T17:30:00Z',
       lat: 10.5354,
       lng: 76.2041,
       accuracyM: 9,
@@ -172,7 +172,7 @@ describe('Asty ERP — Core Business Rules & Security Verification', () => {
     submitSiteCheckin(state, {
       actorUserId: 'usr-sup-1',
       siteId: 'site-hadi',
-      reportDate: '2026-11-01',
+      reportDate: '2027-01-15',
       slot: 'evening',
       lat: 10.5354,
       lng: 76.2041,
