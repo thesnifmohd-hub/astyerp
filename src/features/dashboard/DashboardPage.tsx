@@ -41,15 +41,30 @@ export function DashboardPage() {
         .map((i) => ({ ...i, siteId: r.siteId, reportDate: r.reportDate })),
     );
 
-  // Cash, Receivables & Payables Summary
-  const bankCashPaise = state.ledgers
-    .filter((l) => l.id === 'ldg-hdfc' || l.id === 'ldg-fed' || l.id === 'ldg-cash')
-    .reduce((s, l) => s + l.openingBalancePaise, 0);
+  // Cash, Receivables & Payables Summary (Opening + Posted Vouchers)
+  const computeLedgerClosingSigned = (ledgerId: string): number => {
+    const ldg = state.ledgers.find((l) => l.id === ledgerId);
+    if (!ldg) return 0;
+    let signed = ldg.openingDrCr === 'DR' ? ldg.openingBalancePaise : -ldg.openingBalancePaise;
+    for (const v of state.vouchers) {
+      if (v.status !== 'posted') continue;
+      for (const line of v.lines) {
+        if (line.ledgerId === ledgerId) {
+          signed += line.drCr === 'DR' ? line.amountPaise : -line.amountPaise;
+        }
+      }
+    }
+    return signed;
+  };
+  const bankCashPaise =
+    computeLedgerClosingSigned('ldg-hdfc') +
+    computeLedgerClosingSigned('ldg-fed') +
+    computeLedgerClosingSigned('ldg-cash');
   const totalReceivablePaise = state.clientBills.reduce(
     (s, b) => s + Math.max(0, b.totalInvoicePaise - b.receivedPaise),
     0,
   );
-  const totalPayablePaise = state.ledgers.find((l) => l.id === 'ldg-ap')?.openingBalancePaise ?? 0;
+  const totalPayablePaise = Math.max(0, -computeLedgerClosingSigned('ldg-ap'));
 
   const chartData = visibleSites.map((s) => {
     const pnl = calculateSitePnL(state, s.id);

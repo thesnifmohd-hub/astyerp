@@ -3,10 +3,11 @@ import { useTranslation } from 'react-i18next';
 import type { UserProfile } from '@/lib/database.types';
 import { canAccessSite, getVisibleSites, hasPermission, submitSiteCheckin } from '@/lib/erpEngine';
 import { listOfflineCheckins, removeOfflineCheckin } from '@/lib/offlineQueue';
-import { createInitialErpState, type ErpDatabaseState } from '@/lib/seedData';
+import { createCleanErpState, type ErpDatabaseState } from '@/lib/seedData';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
-const STORAGE_KEY = 'asty_erp_state_v1';
+const STORAGE_KEY = 'asty_erp_state_clean_v2';
+const LEGACY_STORAGE_KEY = 'asty_erp_state_v1';
 const USER_KEY = 'asty_erp_active_user_v1';
 const WORKSPACE_KEY = 'asty-main';
 export const DEMO_SUPABASE_AUTH_PASSWORD = 'AstyDemo#2026!';
@@ -36,6 +37,7 @@ export function ErpProvider({ children }: { children: React.ReactNode }) {
 
   const [state, setState] = useState<ErpDatabaseState>(() => {
     try {
+      window.localStorage.removeItem(LEGACY_STORAGE_KEY);
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
         return JSON.parse(raw) as ErpDatabaseState;
@@ -43,7 +45,7 @@ export function ErpProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // ignore corrupt storage
     }
-    return createInitialErpState();
+    return createCleanErpState();
   });
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(() => {
@@ -261,10 +263,11 @@ export function ErpProvider({ children }: { children: React.ReactNode }) {
   };
 
   const resetDemoData = () => {
-    const fresh = createInitialErpState();
+    const fresh = createCleanErpState();
     setState(fresh);
+    window.localStorage.removeItem(LEGACY_STORAGE_KEY);
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh));
-    void pushStateToCloud(fresh, 'Reset Seed Data');
+    void pushStateToCloud(fresh, 'Cleared All ERP Data');
   };
 
   const syncOfflineQueueNow = async (): Promise<number> => {

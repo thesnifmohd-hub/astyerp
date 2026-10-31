@@ -18,25 +18,38 @@ export function MaterialsPage() {
   const [toast, setToast] = useState<string | null>(null);
 
   // Create PO Form
-  const [poSiteId, setPoSiteId] = useState(visibleSites[0]?.id ?? 'site-hadi');
-  const [poVendorId, setPoVendorId] = useState(state.vendors[0]?.id ?? 'vnd-1');
-  const [poItemId, setPoItemId] = useState('itm-cement');
-  const [poQty, setPoQty] = useState(250);
-  const [poRateInr, setPoRateInr] = useState('395');
+  const [poSiteId, setPoSiteId] = useState(visibleSites[0]?.id ?? '');
+  const [poVendorId, setPoVendorId] = useState(state.vendors[0]?.id ?? '');
+  const [poItemId, setPoItemId] = useState(state.items[0]?.id ?? '');
+  const [poQty, setPoQty] = useState(0);
+  const [poRateInr, setPoRateInr] = useState('');
 
   // Stock Transfer Form
-  const [fromSiteId, setFromSiteId] = useState('site-talikulam');
-  const [toSiteId, setToSiteId] = useState('site-hadi');
-  const [trItemId, setTrItemId] = useState('itm-cement');
-  const [trQty, setTrQty] = useState(25);
+  const [fromSiteId, setFromSiteId] = useState(visibleSites[0]?.id ?? '');
+  const [toSiteId, setToSiteId] = useState(visibleSites[1]?.id ?? '');
+  const [trItemId, setTrItemId] = useState(state.items[0]?.id ?? '');
+  const [trQty, setTrQty] = useState(0);
+
+  // Add Item / Vendor Master Forms
+  const [newItemName, setNewItemName] = useState('');
+  const [newItemUnit, setNewItemUnit] = useState('Bag');
+  const [newItemGst, setNewItemGst] = useState('18');
+  const [newVendorName, setNewVendorName] = useState('');
+  const [newVendorGstin, setNewVendorGstin] = useState('');
 
   if (!currentUser) return null;
 
-  const last3Rates = getLast3PurchaseRates(state, poItemId);
-  const selectedItem = state.items.find((i) => i.id === poItemId) ?? state.items[0];
+  const selectedItem = state.items.find((i) => i.id === poItemId) ?? state.items[0] ?? null;
+  const last3Rates = selectedItem ? getLast3PurchaseRates(state, selectedItem.id) : [];
 
   const handleCreatePo = (e: React.FormEvent) => {
     e.preventDefault();
+    const targetSiteId = poSiteId || visibleSites[0]?.id;
+    const targetVendorId = poVendorId || state.vendors[0]?.id;
+    if (!selectedItem || !targetSiteId || !targetVendorId || poQty <= 0) {
+      setToast('Create a Site, Vendor, and Material Item first (in the Items & Vendors tab), then enter a valid quantity and rate.');
+      return;
+    }
     const ratePaise = rupeesToPaise(poRateInr);
     const subtotalPaise = Math.round(ratePaise * poQty);
     const gst = splitGST(subtotalPaise, selectedItem.gstRatePct);
@@ -47,10 +60,10 @@ export function MaterialsPage() {
       const apr = createApprovalRequest(draft, {
         actorUserId: currentUser.id,
         requestType: 'purchase_order',
-        siteId: poSiteId,
+        siteId: targetSiteId,
         sourceTable: 'purchase_orders',
         sourceId: poId,
-        antiSplitItemId: poItemId,
+        antiSplitItemId: selectedItem.id,
         amountPaise: gst.grossPaise,
         title: `${poNumber} — ${poQty} ${selectedItem.unit} ${selectedItem.name}`,
         details: `Rate ${formatINR(ratePaise)}/${selectedItem.unit} + ${selectedItem.gstRatePct}% GST`,
@@ -59,11 +72,11 @@ export function MaterialsPage() {
       draft.purchaseOrders.unshift({
         id: poId,
         poNumber,
-        siteId: poSiteId,
-        vendorId: poVendorId,
+        siteId: targetSiteId,
+        vendorId: targetVendorId,
         poDate: todayISOInIST(),
         deliveryDate: todayISOInIST(),
-        itemId: poItemId,
+        itemId: selectedItem.id,
         qtyOrdered: poQty,
         qtyReceived: 0,
         ratePaise,
@@ -199,12 +212,13 @@ export function MaterialsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="font-semibold block mb-1">Quantity ({selectedItem.unit})</label>
+                  <label className="font-semibold block mb-1">Quantity ({selectedItem?.unit ?? 'Unit'})</label>
                   <input
                     type="number"
                     min={1}
-                    value={poQty}
+                    value={poQty || ''}
                     onChange={(e) => setPoQty(Number(e.target.value))}
+                    placeholder="0"
                     className="w-full rounded-lg border border-asty-border px-2.5 py-2"
                   />
                 </div>
@@ -215,6 +229,7 @@ export function MaterialsPage() {
                     step="0.5"
                     value={poRateInr}
                     onChange={(e) => setPoRateInr(e.target.value)}
+                    placeholder="0.00"
                     className="w-full rounded-lg border border-asty-border px-2.5 py-2"
                   />
                 </div>
@@ -224,7 +239,7 @@ export function MaterialsPage() {
               <div className="rounded-xl bg-asty-surface p-3.5 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2 font-semibold text-asty-charcoal">
                   <TrendingUp className="h-4 w-4" />
-                  <span>Last 3 Approved Purchase Rates for {selectedItem.name}:</span>
+                  <span>Last 3 Approved Purchase Rates for {selectedItem?.name ?? 'Selected Material'}:</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {last3Rates.length === 0 ? (
@@ -235,7 +250,7 @@ export function MaterialsPage() {
                         key={r.poNumber}
                         className="rounded-lg border border-asty-border bg-white px-2.5 py-1 font-mono text-[11px]"
                       >
-                        <strong>{formatINR(r.ratePaise)}</strong>/{selectedItem.unit} • {r.vendorName} ({formatDDMMYYYY(r.poDate)})
+                        <strong>{formatINR(r.ratePaise)}</strong>/{selectedItem?.unit ?? 'Unit'} • {r.vendorName} ({formatDDMMYYYY(r.poDate)})
                       </span>
                     ))
                   )}
@@ -452,32 +467,132 @@ export function MaterialsPage() {
 
       {tab === 'masters' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 text-xs">
-          <div className="rounded-2xl border border-asty-border bg-white p-5">
-            <h3 className="font-heading text-sm font-bold mb-3">Item Master</h3>
+          <div className="rounded-2xl border border-asty-border bg-white p-5 space-y-3">
+            <h3 className="font-heading text-sm font-bold">Item Master</h3>
+            {can('material.edit') && (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!newItemName.trim()) return;
+                  mutateState((draft) => {
+                    const id = `itm-${Date.now()}`;
+                    draft.items.push({
+                      id,
+                      code: `MAT-${draft.items.length + 1}`,
+                      name: newItemName.trim(),
+                      nameMl: newItemName.trim(),
+                      category: 'other',
+                      unit: newItemUnit.trim() || 'Nos',
+                      hsnCode: '2523',
+                      gstRatePct: Number(newItemGst) || 18,
+                      defaultWastagePct: 3,
+                      referenceRatePaise: 0,
+                    });
+                    setPoItemId(id);
+                  });
+                  setNewItemName('');
+                }}
+                className="flex flex-wrap gap-2"
+              >
+                <input
+                  type="text"
+                  value={newItemName}
+                  onChange={(e) => setNewItemName(e.target.value)}
+                  placeholder="Item name (e.g. OPC 53 Cement)"
+                  className="flex-1 rounded-lg border border-asty-border px-2.5 py-1.5"
+                />
+                <input
+                  type="text"
+                  value={newItemUnit}
+                  onChange={(e) => setNewItemUnit(e.target.value)}
+                  placeholder="Unit"
+                  className="w-20 rounded-lg border border-asty-border px-2.5 py-1.5"
+                />
+                <input
+                  type="number"
+                  value={newItemGst}
+                  onChange={(e) => setNewItemGst(e.target.value)}
+                  placeholder="GST %"
+                  className="w-20 rounded-lg border border-asty-border px-2.5 py-1.5"
+                />
+                <button type="submit" className="rounded-lg bg-asty-charcoal px-3 py-1.5 font-bold text-white">
+                  + Add Item
+                </button>
+              </form>
+            )}
             <div className="divide-y">
-              {state.items.map((it) => (
-                <div key={it.id} className="py-2 flex justify-between">
-                  <span>
-                    <strong>{it.name}</strong> ({it.nameMl}) • HSN {it.hsnCode}
-                  </span>
-                  <span className="font-mono">
-                    {formatINR(it.referenceRatePaise)}/{it.unit} ({it.gstRatePct}% GST)
-                  </span>
-                </div>
-              ))}
+              {state.items.length === 0 ? (
+                <div className="py-4 text-slate-400">No items added yet.</div>
+              ) : (
+                state.items.map((it) => (
+                  <div key={it.id} className="py-2 flex justify-between">
+                    <span>
+                      <strong>{it.name}</strong> • HSN {it.hsnCode}
+                    </span>
+                    <span className="font-mono">
+                      {it.unit} ({it.gstRatePct}% GST)
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
-          <div className="rounded-2xl border border-asty-border bg-white p-5">
-            <h3 className="font-heading text-sm font-bold mb-3">Vendor Master (10 Kerala Suppliers)</h3>
+          <div className="rounded-2xl border border-asty-border bg-white p-5 space-y-3">
+            <h3 className="font-heading text-sm font-bold">Vendor Master</h3>
+            {can('material.edit') && (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!newVendorName.trim()) return;
+                  mutateState((draft) => {
+                    const id = `vnd-${Date.now()}`;
+                    draft.vendors.push({
+                      id,
+                      code: `VND-${draft.vendors.length + 1}`,
+                      name: newVendorName.trim(),
+                      phone: '',
+                      gstin: newVendorGstin.trim(),
+                      address: 'Kerala',
+                    });
+                    setPoVendorId(id);
+                  });
+                  setNewVendorName('');
+                  setNewVendorGstin('');
+                }}
+                className="flex flex-wrap gap-2"
+              >
+                <input
+                  type="text"
+                  value={newVendorName}
+                  onChange={(e) => setNewVendorName(e.target.value)}
+                  placeholder="Supplier / Vendor Name"
+                  className="flex-1 rounded-lg border border-asty-border px-2.5 py-1.5"
+                />
+                <input
+                  type="text"
+                  value={newVendorGstin}
+                  onChange={(e) => setNewVendorGstin(e.target.value)}
+                  placeholder="GSTIN (Optional)"
+                  className="w-40 rounded-lg border border-asty-border px-2.5 py-1.5"
+                />
+                <button type="submit" className="rounded-lg bg-asty-charcoal px-3 py-1.5 font-bold text-white">
+                  + Add Vendor
+                </button>
+              </form>
+            )}
             <div className="divide-y">
-              {state.vendors.map((v) => (
-                <div key={v.id} className="py-2 flex justify-between">
-                  <span>
-                    <strong>{v.name}</strong> • {v.address}
-                  </span>
-                  <span className="font-mono text-slate-500">{v.gstin}</span>
-                </div>
-              ))}
+              {state.vendors.length === 0 ? (
+                <div className="py-4 text-slate-400">No vendors added yet.</div>
+              ) : (
+                state.vendors.map((v) => (
+                  <div key={v.id} className="py-2 flex justify-between">
+                    <span>
+                      <strong>{v.name}</strong> • {v.address}
+                    </span>
+                    <span className="font-mono text-slate-500">{v.gstin}</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

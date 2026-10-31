@@ -21,7 +21,7 @@ export function AdminPage() {
   const [uName, setUName] = useState('');
   const [uEmail, setUEmail] = useState('');
   const [uPosId, setUPosId] = useState('pos-sup');
-  const [uSiteId, setUSiteId] = useState('site-hadi');
+  const [uSiteId, setUSiteId] = useState(state.sites[0]?.id ?? 'ALL');
 
   // Ops Threshold Editor
   const [opsLimitInr, setOpsLimitInr] = useState('3000');
@@ -105,7 +105,7 @@ export function AdminPage() {
           className="inline-flex items-center gap-1.5 rounded-xl border border-asty-border bg-white px-3.5 py-2 text-xs font-semibold hover:bg-slate-50"
         >
           <RotateCcw className="h-3.5 w-3.5" />
-          Reset Seeded Demo State
+          Clear All ERP Data
         </button>
       </div>
 

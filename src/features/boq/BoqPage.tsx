@@ -12,11 +12,72 @@ export function BoqPage() {
   const [quoteStyle, setQuoteStyle] = useState<'commercial_11_col' | 'residential_boq' | 'residential_sqft'>('commercial_11_col');
   const [showQuoteModal, setShowQuoteModal] = useState(false);
 
-  const boq = state.boqVersions.find((b) => b.siteId === siteId) ?? state.boqVersions[0];
-  const site = state.sites.find((s) => s.id === boq?.siteId);
+  const activeSite = visibleSites.find((s) => s.id === siteId) ?? visibleSites[0];
+  const boq = state.boqVersions.find((b) => b.siteId === activeSite?.id);
+  const site = activeSite;
   const canSeeProfit = can('report.profit.view');
 
-  if (!boq || !site) return null;
+  if (!site) {
+    return (
+      <div className="rounded-2xl border border-asty-border bg-white p-8 text-center space-y-2">
+        <div className="font-heading text-lg font-bold text-asty-black">No Sites Available for BOQ</div>
+        <p className="text-xs text-slate-500">Create a construction site in Site Master first to build its BOQ and Quotation.</p>
+      </div>
+    );
+  }
+
+  if (!boq) {
+    return (
+      <div className="rounded-2xl border border-asty-border bg-white p-8 text-center space-y-4">
+        <div className="font-heading text-lg font-bold text-asty-black">No BOQ Created for {site.name}</div>
+        <p className="text-xs text-slate-500">Initialize a clean Version 1 BOQ & Rate Sheet for {site.name} to start estimating.</p>
+        {can('boq.edit') && (
+          <button
+            type="button"
+            onClick={() =>
+              mutateState((draft) => {
+                draft.boqVersions.push({
+                  id: `boqv-${site.id}-v1`,
+                  siteId: site.id,
+                  versionNo: 1,
+                  projectType: site.projectType,
+                  builtUpAreaSqft: 0,
+                  status: 'draft',
+                  isLocked: false,
+                  rateSheet: {
+                    cementBagPaise: 0,
+                    mSandCftPaise: 0,
+                    agg20mmCftPaise: 0,
+                    steelKgPaise: 0,
+                    rmcM25M3Paise: 0,
+                    rmcM30M3Paise: 0,
+                    masonDayPaise: 0,
+                    helperDayPaise: 0,
+                    carpenterDayPaise: 0,
+                    barBenderDayPaise: 0,
+                    shutteringSqmPaise: 0,
+                    stagingSqmPaise: 0,
+                    mixerDayPaise: 0,
+                    lateriteStonePaise: 0,
+                    floorHeightM: 3,
+                    wastagePct: 0,
+                    profitPct: 0,
+                  },
+                  items: [],
+                  totalCostPaise: 0,
+                  quotedTotalPaise: 0,
+                  roundedTotalPaise: 0,
+                });
+              })
+            }
+            className="rounded-xl bg-asty-charcoal px-4 py-2.5 text-xs font-bold text-white"
+          >
+            Initialize Clean BOQ (v1)
+          </button>
+        )}
+      </div>
+    );
+  }
 
   const totalConcreteM3 = boq.items.reduce((s, r) => s + r.concreteM3, 0);
   const totalSteelKg = boq.items.reduce((s, r) => s + r.steelKg, 0);

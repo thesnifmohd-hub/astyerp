@@ -39,22 +39,28 @@ export function DailyReportingPage() {
     accuracyM: 10.5,
   });
   const [photos, setPhotos] = useState<DailyPhoto[]>([]);
-  const [attendance, setAttendance] = useState<Record<string, 'present' | 'half_day' | 'absent'>>({
-    'wrk-1': 'present',
-    'wrk-2': 'present',
-    'wrk-3': 'present',
-  });
-  const [subconTrade, setSubconTrade] = useState('Electrical & Conduit');
-  const [subconCount, setSubconCount] = useState(4);
-  const [completedQty, setCompletedQty] = useState(8);
-  const [usedItemId, setUsedItemId] = useState('itm-cement');
-  const [usedQty, setUsedQty] = useState(12);
+  const [attendance, setAttendance] = useState<Record<string, 'present' | 'half_day' | 'absent'>>({});
+  const [subconTrade, setSubconTrade] = useState('');
+  const [subconCount, setSubconCount] = useState(0);
+  const [completedQty, setCompletedQty] = useState(0);
+  const [usedItemId, setUsedItemId] = useState(state.items[0]?.id ?? '');
+  const [usedQty, setUsedQty] = useState(0);
   const [issueText, setIssueText] = useState('');
   const [isUrgent, setIsUrgent] = useState(false);
   const [tomorrowPlan, setTomorrowPlan] = useState('');
   const [feedback, setFeedback] = useState<{ type: 'ok' | 'err'; msg: string } | null>(null);
 
-  if (!currentUser || !activeSite) return null;
+  if (!currentUser) return null;
+  if (!activeSite) {
+    return (
+      <div className="rounded-2xl border border-asty-border bg-white p-8 text-center space-y-2">
+        <div className="font-heading text-lg font-bold text-asty-black">No Sites Assigned or Created Yet</div>
+        <p className="text-xs text-slate-500">
+          Create your first construction site in Site Master (and assign it to field staff) to begin daily GPS check-ins and DPRs.
+        </p>
+      </div>
+    );
+  }
 
   const geoEval = evaluateGeofence(gps, activeSite.lat, activeSite.lng, activeSite.geofenceRadiusM);
   const siteActivities = state.planActivities.filter((a) => a.siteId === activeSite.id);

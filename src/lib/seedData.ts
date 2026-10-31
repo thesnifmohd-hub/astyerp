@@ -1715,3 +1715,63 @@ export function createInitialErpState(): ErpDatabaseState {
   };
 }
 
+export function createCleanErpState(): ErpDatabaseState {
+  const base = createInitialErpState();
+  return {
+    company: {
+      ...base.company,
+      lockedPeriodBefore: null,
+    },
+    permissions: base.permissions,
+    positions: base.positions,
+    positionPermissions: base.positionPermissions,
+    users: base.users.map((u) => ({
+      ...u,
+      assignedSiteIds: [],
+    })),
+    clients: [],
+    sites: [],
+    siteFinancials: {},
+    dailyReports: [],
+    approvalChains: base.approvalChains,
+    approvalRequests: [],
+    items: [],
+    vendors: [],
+    materialRequests: [],
+    purchaseOrders: [],
+    goodsReceipts: [],
+    stockTransfers: [],
+    siteOpeningStock: {},
+    boqVersions: [],
+    planActivities: [],
+    workers: [],
+    wageSheets: [],
+    subcontractors: [],
+    workOrders: [],
+    subcontractorBills: [],
+    ledgers: base.ledgers.map((l) => ({
+      ...l,
+      name:
+        l.id === 'ldg-hdfc'
+          ? 'Primary Bank Current Account'
+          : l.id === 'ldg-fed'
+            ? 'Secondary Bank / OD Account'
+            : l.id === 'ldg-loan'
+              ? 'Term & Equipment Loans'
+              : l.id === 'ldg-fa'
+                ? 'Plant, Vehicles & Site Machinery'
+                : l.name,
+      openingBalancePaise: 0,
+    })),
+    vouchers: [],
+    clientBills: [],
+    fixedAssets: [],
+    loans: [],
+    pettyCashWallets: [],
+    bankStatementRows: [],
+    extraWorkItems: [],
+    notifications: [],
+    auditLog: [],
+  };
+}
+

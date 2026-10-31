@@ -17,8 +17,8 @@ export function AccountingPage() {
   const [vType, setVType] = useState<VoucherType>('payment');
   const [drLedgerId, setDrLedgerId] = useState('ldg-mat-exp');
   const [crLedgerId, setCrLedgerId] = useState('ldg-hdfc');
-  const [costSiteId, setCostSiteId] = useState<string>('site-hadi');
-  const [vAmountInr, setVAmountInr] = useState('25000');
+  const [costSiteId, setCostSiteId] = useState<string>(state.sites[0]?.id ?? 'HEAD_OFFICE');
+  const [vAmountInr, setVAmountInr] = useState('');
   const [vNarration, setVNarration] = useState('');
 
   if (!currentUser) return null;

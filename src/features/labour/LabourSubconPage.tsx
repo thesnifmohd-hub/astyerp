@@ -8,23 +8,28 @@ import { applyPercentagePaise, formatINR } from '@/lib/money';
 export function LabourSubconPage() {
   const { state, currentUser, visibleSites, can, mutateState } = useErp();
   const [tab, setTab] = useState<'workers' | 'wages' | 'subcon'>('workers');
-  const [siteId, setSiteId] = useState(visibleSites[0]?.id ?? 'site-hadi');
-  const [measuredWoId, setMeasuredWoId] = useState(state.workOrders[0]?.id ?? 'wo-1');
-  const [measuredQty, setMeasuredQty] = useState(250);
+  const [siteId, setSiteId] = useState(visibleSites[0]?.id ?? '');
+  const [measuredWoId, setMeasuredWoId] = useState(state.workOrders[0]?.id ?? '');
+  const [measuredQty, setMeasuredQty] = useState(0);
   const [msg, setMsg] = useState<string | null>(null);
 
   if (!currentUser) return null;
 
   const generateWeeklyWageSheet = () => {
+    const targetSiteId = siteId || visibleSites[0]?.id;
+    if (!targetSiteId || state.workers.length === 0) {
+      setMsg('Create a Site and add Workers first before generating a Wage Sheet.');
+      return;
+    }
     mutateState((draft) => {
       const grossPaise = draft.workers.slice(0, 4).reduce((s, w) => s + w.dailyWagePaise * 6, 0);
-      const recoveryPaise = 150000;
+      const recoveryPaise = 0;
       const netPaise = grossPaise - recoveryPaise;
-      const sheetNo = `WS/26-27/W${draft.wageSheets.length + 19}`;
+      const sheetNo = `WS/26-27/W${draft.wageSheets.length + 1}`;
       draft.wageSheets.unshift({
         id: `ws-${Date.now()}`,
         sheetNo,
-        siteId,
+        siteId: targetSiteId,
         weekStart: todayISOInIST(),
         weekEnd: todayISOInIST(),
         grossPaise,
@@ -41,7 +46,7 @@ export function LabourSubconPage() {
           sourceLabel: `Wage Sheet ${sheetNo}`,
           status: 'pending_posting',
           lines: [
-            { ledgerId: 'ldg-lab-exp', costCentreSiteId: siteId, drCr: 'DR', amountPaise: netPaise },
+            { ledgerId: 'ldg-lab-exp', costCentreSiteId: targetSiteId, drCr: 'DR', amountPaise: netPaise },
             { ledgerId: 'ldg-hdfc', costCentreSiteId: 'HEAD_OFFICE', drCr: 'CR', amountPaise: netPaise },
           ],
         });

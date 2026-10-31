@@ -21,7 +21,7 @@ export function SitesPage() {
   const [newClientPhone, setNewClientPhone] = useState('');
   const [newProjectType, setNewProjectType] = useState<ProjectType>('residential');
   const [newContractType, setNewContractType] = useState<ContractType>('lump_sum');
-  const [newContractRupees, setNewContractRupees] = useState('4500000');
+  const [newContractRupees, setNewContractRupees] = useState('');
   const [newPmcPct, setNewPmcPct] = useState('0');
   const [newLat, setNewLat] = useState(10.5276);
   const [newLng, setNewLng] = useState(76.2144);
@@ -78,8 +78,8 @@ export function SitesPage() {
         eveningEnd: '19:00',
         scheduleHealth: 'on_track',
         daysBehind: 0,
-        supervisorIds: ['usr-sup-1'],
-        coordinatorId: 'usr-coord-1',
+        supervisorIds: [],
+        coordinatorId: currentUser.id,
         documents: [],
       });
       draft.siteFinancials[siteId] = {

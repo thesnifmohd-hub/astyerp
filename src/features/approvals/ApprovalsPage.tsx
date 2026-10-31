@@ -20,9 +20,9 @@ export function ApprovalsPage() {
 
   // Raise Request Form
   const [reqType, setReqType] = useState<ApprovalRequestType>('petty_cash');
-  const [reqSiteId, setReqSiteId] = useState<string>(visibleSites[0]?.id ?? 'site-hadi');
-  const [reqItemId, setReqItemId] = useState<string>('itm-wire');
-  const [reqAmountInr, setReqAmountInr] = useState('1800');
+  const [reqSiteId, setReqSiteId] = useState<string>(visibleSites[0]?.id ?? '');
+  const [reqItemId, setReqItemId] = useState<string>(state.items[0]?.id ?? '');
+  const [reqAmountInr, setReqAmountInr] = useState('');
   const [reqTitle, setReqTitle] = useState('');
   const [reqDetails, setReqDetails] = useState('');
 

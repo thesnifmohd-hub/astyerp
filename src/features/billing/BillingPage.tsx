@@ -10,8 +10,8 @@ import { formatINR, rupeesToPaise } from '@/lib/money';
 export function BillingPage() {
   const { state, currentUser, visibleSites, can, mutateState } = useErp();
   const [billType, setBillType] = useState<ClientBill['billType']>('ra_bill');
-  const [siteId, setSiteId] = useState(visibleSites[0]?.id ?? 'site-hadi');
-  const [cumInr, setCumInr] = useState('2200000');
+  const [siteId, setSiteId] = useState(visibleSites[0]?.id ?? '');
+  const [cumInr, setCumInr] = useState('');
   const [selectedBillPdf, setSelectedBillPdf] = useState<ClientBill | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
 
