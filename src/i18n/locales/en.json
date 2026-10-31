@@ -1,0 +1,77 @@
+{
+  "app": {
+    "brand": "Asty Constructions",
+    "subtitle": "Construction ERP & Double-Entry Accounting",
+    "fy": "FY",
+    "online": "Online",
+    "offline": "Offline — Queuing Locally",
+    "sync_now": "Sync Queued ({{count}})",
+    "demo_mode": "Local Interactive DB (Add .env.local for Live Supabase)",
+    "live_mode": "Connected to Supabase"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "sites": "Sites",
+    "dpr": "Daily Reporting (DPR)",
+    "approvals": "Approvals",
+    "materials": "Materials & PO",
+    "boq": "BOQ & Quotation",
+    "planning": "Schedule & Gantt",
+    "labour": "Labour & Subcon",
+    "accounting": "Accounting",
+    "billing": "Client Billing",
+    "reports": "Reports & Tuesday Pack",
+    "portal": "Client Portal",
+    "admin": "Admin & Permissions",
+    "logout": "Sign Out"
+  },
+  "auth": {
+    "sign_in": "Sign In with OTP",
+    "email_or_phone": "Email or Mobile (+91)",
+    "send_otp": "Send OTP",
+    "verify_otp": "Verify & Enter ERP",
+    "quick_demo_login": "Instant Position Login (Demo Seed Users — No Hard-Coded Roles)"
+  },
+  "dpr": {
+    "title": "Daily Site Check-In & Report",
+    "select_site": "Select Assigned Site",
+    "morning": "Morning Check-In",
+    "afternoon": "Afternoon Check-In",
+    "evening": "Evening Check-In & Close Day",
+    "window": "Window",
+    "verify_gps": "Verify Live Site GPS",
+    "simulate_at_site": "Simulate GPS Inside Site Radius",
+    "simulate_outside": "Test Outside Radius (Blocked)",
+    "capture_photo": "Take Live Stamped Photo",
+    "min_3_photos": "Minimum 3 live camera photos required (No gallery upload)",
+    "own_attendance": "Own Crew Attendance (Concrete & Brick)",
+    "subcon_headcount": "Subcontractor Headcount by Trade",
+    "todays_activities": "Today's Planned Activities",
+    "materials_received": "Materials Received Today (with Challan Photo)",
+    "qty_completed": "Quantity Completed Today",
+    "materials_used": "Materials Used Today (Auto-Deducts Stock)",
+    "problems_holdups": "Problems / Hold-Ups",
+    "urgent_flag": "URGENT — Alert Management Immediately",
+    "tomorrows_plan": "Tomorrow's Plan (Mandatory to Close Day)",
+    "submit_morning": "Submit Morning Check-In",
+    "submit_afternoon": "Submit Afternoon Photos",
+    "submit_evening": "Submit Evening Report & Close Day",
+    "error_outside_radius": "Check-in blocked! You are outside the allowed site geofence radius.",
+    "error_mock_gps": "Mock GPS location rejected. Please enable real device GPS.",
+    "low_accuracy_warning": "Low GPS accuracy (>50m) flagged for coordinator review.",
+    "present": "Present",
+    "half_day": "Half Day",
+    "absent": "Absent"
+  },
+  "approvals": {
+    "inbox": "My Approvals Inbox",
+    "all_requests": "All Approval Requests",
+    "approve": "Approve",
+    "technical_ok": "Technical Check OK → Forward",
+    "review_ok": "Review OK → Forward to Management",
+    "send_back": "Send Back",
+    "reject": "Reject",
+    "anti_split_badge": "7-Day Anti-Split Total"
+  }
+}
+
